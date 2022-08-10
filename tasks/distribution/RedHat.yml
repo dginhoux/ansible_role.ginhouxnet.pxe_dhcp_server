@@ -1,0 +1,113 @@
+---
+- name: generate dhcp
+  block:
+    - name: "create configuration directoryr"
+      file:
+        state: directory
+        dest: '{{ dhcp_config_dir }}'
+
+
+    - name: "create sub-configuration directory"
+      file:
+        state: directory
+        dest: '{{ dhcp_sub_config_dir }}'
+
+
+    - name: "create main config file"
+      template:
+        src: dhcpd.conf.j2
+        dest: "{{ dhcp_main_config4_file }}"
+
+
+    - name: "create main config6 file"
+      template:
+        src: dhcpd6.conf.j2
+        dest: "{{ dhcp_main_config6_file }}"
+
+
+    - name: identify existing subnets and leases files for cleanup
+      find:
+        paths: "{{ dhcp_sub_config_dir }}"
+        patterns: "*"
+      register: subnets_leases_files_to_delete
+
+
+    - name: cleanup subnets and leases files
+      file:
+        dest: "{{ item.path }}"
+        state: absent
+      with_items: "{{ subnets_leases_files_to_delete.files }}"
+
+
+    - name: "create subnet config file"
+      template:
+        src: subnet4.conf.j2
+        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.conf"
+      loop: "{{ dhcp_subnets4 | flatten }}"
+      loop_control:
+        loop_var: subnet
+
+
+    - name: "create empty leases config file"
+      copy:
+        content: |
+          # Ansible managed
+        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.leases"
+      loop: "{{ dhcp_subnets4 | flatten }}"
+      loop_control:
+        loop_var: subnet
+
+
+    - name: "create leases"
+      template:
+        src: subnet4.leases.j2
+        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ lease_list.network }}.leases"
+      loop: "{{ dhcp_leases4 }}"
+      loop_control:
+        loop_var: lease_list
+
+
+    - name: "override dhcpd.service"
+      copy:
+        content: |
+          [Unit]
+          Description=DHCPv4 Server Daemon
+          Documentation=man:dhcpd(8) man:dhcpd.conf(5)
+          Wants=network-online.target
+          After=network-online.target
+          After=time-sync.target
+          [Service]
+          Type=notify
+          EnvironmentFile=-/etc/sysconfig/dhcpd
+          ExecStart=/usr/sbin/dhcpd -f -cf /etc/dhcp/dhcpd.conf -user dhcpd -group dhcpd --no-pid ens18
+          StandardError=null
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/dhcpd.service
+
+
+    - name: "systemctl daemon-reload"
+      systemd:
+        daemon-reload: "true"      
+  when: dhcp_configure_action == "generate"
+  notify: dhcp_restart
+
+
+- name: cleanup dhcp
+  block:
+    - name: identify leases files for cleanup
+      find:
+        paths: "{{ dhcp_sub_config_dir }}"
+        patterns: "*.leases"
+        recurse: "yes"
+      register: leases_files_to_delete
+
+
+    - name: cleanup leases files
+      copy:
+        dest: "{{ item.path }}"
+        content: |
+          # Ansible managed
+      with_items: "{{ leases_files_to_delete.files }}"
+  when: dhcp_configure_action == "cleanup"
+  notify: dhcp_restart

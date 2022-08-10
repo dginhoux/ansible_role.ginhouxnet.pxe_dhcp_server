@@ -1,0 +1,46 @@
+# Ansible managed
+
+subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
+  range {{ subnet.range }};
+  option routers {{ subnet.gateway }};
+  option domain-name-servers {{ subnet.dns }};
+  # option domain-name "{  { subnet.domain }  }";
+  option ntp-servers {{ subnet.ntp }};
+  authoritative;
+
+  max-lease-time {{ subnet.max_lease_time }};
+  default-lease-time {{ subnet.default_lease_time }};
+
+{% if subnet.allow_booting %}
+  next-server {{ subnet.tftp }};
+  allow booting;
+  # specific bootfile to support BIOS, UEFI32, UEFI64 boot mode
+  if option arch = 00:06 {
+    filename "syslinux/efi32/syslinux.efi";
+    option pxelinux.pathprefix "syslinux/efi32/";
+  } else if option arch = 00:07 {
+    filename "syslinux/efi64/syslinux.efi";
+    option pxelinux.pathprefix "syslinux/efi64/";
+  } else if option arch = 00:09 {
+    filename "syslinux/efi64/syslinux.efi";
+    option pxelinux.pathprefix "syslinux/efi64/";
+  } else {
+    filename "syslinux/bios/pxelinux.0";
+    option pxelinux.pathprefix "syslinux/bios/";
+  }
+
+  # specific options for pxelinux to use specified config file
+  vendor-option-space pxelinux;
+  option pxelinux.magic f1:00:74:7e;
+  option dhcp-parameter-request-list = concat(option dhcp-parameter-request-list,d0,d1,d2,d3);
+{% endif %}
+
+{% if subnet.allow_unknown_clients %}
+  deny unknown-clients;
+{% else %}
+  allow unknown-clients;
+{% endif %}
+
+  # include all leases files for this subnet
+  include "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.leases";
+}

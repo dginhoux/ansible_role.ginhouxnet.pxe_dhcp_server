@@ -1,0 +1,6 @@
+# Ansible managed
+{% if lease_list.leases is defined and lease_list.leases | length > 0 %}
+{% for lease in lease_list.leases %}
+host {{ lease.name }} { fixed-address {{ lease.ipaddr }}; hardware ethernet {{ lease.macaddr }}; option pxelinux.configfile "pxelinux.cfg/{{ lease.name }}.cfg"; }
+{% endfor %}
+{% endif %}
