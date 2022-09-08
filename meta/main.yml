@@ -1,7 +1,7 @@
 ---
 
 galaxy_info:
-  role_name: ginhouxnet.pxe_dhcp_server
+  role_name: pxe_dhcp_server
   description: install isc dhcp server and configure subnets and leases
   author: dginhoux
   company: ginhouxnet
