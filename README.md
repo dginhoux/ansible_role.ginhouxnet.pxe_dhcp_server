@@ -14,8 +14,7 @@ This role is built to only run on platforms defined in `meta/main.yml`
 Role Variables
 --------------
 
-
-```
+```yaml
 dhcp_configure_action: generate
 # dhcp_configure_action: cleanup
 
@@ -44,7 +43,6 @@ dhcp_leases4:
 dhcp_subnets6: []
 
 dhcp_leases6: []
-
 ```
 
 
