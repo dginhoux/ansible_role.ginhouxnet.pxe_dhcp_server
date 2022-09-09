@@ -4,26 +4,22 @@
     - name: "create configuration directoryr"
       file:
         state: directory
-        dest: '{{ dhcp_config_dir }}'
-
+        dest: "{{ dhcp_config_dir }}"
 
     - name: "create sub-configuration directory"
       file:
         state: directory
-        dest: '{{ dhcp_sub_config_dir }}'
-
+        dest: "{{ dhcp_sub_config_dir }}"
 
     - name: "create main config file"
       template:
         src: dhcpd.conf.j2
         dest: "{{ dhcp_main_config4_file }}"
 
-
     - name: "create main config6 file"
       template:
         src: dhcpd6.conf.j2
         dest: "{{ dhcp_main_config6_file }}"
-
 
     - name: identify existing subnets and leases files for cleanup
       find:
@@ -31,19 +27,16 @@
         patterns: "*"
       register: subnets_leases_files_to_delete
 
-
     - name: cleanup subnets and leases files
       file:
         dest: "{{ item.path }}"
         state: absent
       with_items: "{{ subnets_leases_files_to_delete.files }}"
 
-
     - name: "create default debian file"
       template:
         src: debian_default.j2
         dest: "{{ dhcp_debian_default_file }}"
-
 
     - name: "create subnet config file"
       template:
@@ -53,7 +46,6 @@
       loop_control:
         loop_var: subnet
 
-
     - name: "create empty leases config file"
       copy:
         content: |
@@ -62,7 +54,6 @@
       loop: "{{ dhcp_subnets4 | flatten }}"
       loop_control:
         loop_var: subnet
-
 
     - name: "create leases"
       template:
@@ -74,7 +65,6 @@
   when: dhcp_configure_action == "generate"
   notify: dhcp_restart
 
-
 - name: cleanup dhcp
   block:
     - name: identify leases files for cleanup
@@ -83,7 +73,6 @@
         patterns: "*.leases"
         recurse: "yes"
       register: leases_files_to_delete
-
 
     - name: cleanup leases files
       copy:

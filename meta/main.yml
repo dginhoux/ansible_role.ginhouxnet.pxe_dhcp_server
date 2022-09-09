@@ -1,5 +1,4 @@
 ---
-
 galaxy_info:
   role_name: pxe_dhcp_server
   description: install isc dhcp server and configure subnets and leases
@@ -25,6 +24,5 @@ galaxy_info:
   galaxy_tags:
     - isc-dchp
     - dhcp
-
 
 dependencies: []
