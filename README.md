@@ -1,4 +1,4 @@
-ginhouxnet.pxe_dhcp_server
+Ansible Role : dginhoux.pxe_dhcp_server
 =========
 
 This ansible role configure isc-dhcp-server.
