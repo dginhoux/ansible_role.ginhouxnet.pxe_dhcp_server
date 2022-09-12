@@ -4,7 +4,6 @@
 # default-lease-time 600;
 # max-lease-time 1800;
 # allow booting;
-log-facility local7;
 
 # The ddns-updates-style parameter controls whether or not the server will
 # attempt to do a DNS update when a lease is confirmed. We default to the
@@ -18,7 +17,11 @@ ddns-update-style none;
 
 # Use this to send dhcp log messages to a different log file (you also
 # have to hack syslog.conf to complete the redirection).
-# log-facility local7;
+log-facility local7;
+
+# options
+option rfc3442-classless-static-routes code 121 = array of integer 8;
+option ms-classless-static-routes code 249 = array of integer 8;
 
 # options for pxelinux
 option space pxelinux;
@@ -28,7 +31,7 @@ option pxelinux.pathprefix code 210 = text;
 option pxelinux.reboottime code 211 = unsigned integer 32;
 
 # options for system architecture
-option arch code 93 = unsigned integer 16;
+option architecture-type code 93 = unsigned integer 16;
 
 # include subnets files
 {% if dhcp_subnets4 is defined and dhcp_subnets4 | length > 0 %}

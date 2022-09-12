@@ -14,15 +14,33 @@ dhcp_subnets4:
     gateway: 192.168.175.254
     dns: 192.168.175.10
     ntp: 192.168.175.10
-    tftp: 192.168.175.180
-    domain: infra.ginhoux.net
+    tftp: pxe.infra.ginhoux.net
+    domain: ginhoux.net
+    allow_booting: "true"
+    allow_unknown_clients: "false"
+    max_lease_time: 84600
+    default_lease_time: 3600
 
 dhcp_leases4:
   - network: 192.168.175.0
+    boot_bios_filename: syslinux/bios/pxelinux.0
+    boot_bios_pathprefix: syslinux/bios/
+    boot_efi64_filename: syslinux/efi64/syslinux.efi
+    boot_efi64_pathprefix: syslinux/efi64/
     leases:
-      - name: test.infra.ginhoux.net
-        ipaddr: 192.168.175.1
-        macaddr: AA:BB:CC:00:11:22
+      - name: srv-swarm-manager1.infra.ginhoux.net
+        ipaddr: 192.168.175.101
+        macaddr: DC:10:00:17:51:01
+      - name: srv-swarm-manager2.infra.ginhoux.net
+        ipaddr: 192.168.175.102
+        macaddr: DC:10:00:17:51:02
+        boot_bios_filename: syslinux/bios_specific/pxelinux.0
+        boot_bios_pathprefix: syslinux/bios_specific/
+        boot_efi64_filename: syslinux/efi64_specific/syslinux.efi
+        boot_efi64_pathprefix: syslinux/efi64_specific/
+      - name: srv-swarm-manager3.infra.ginhoux.net
+        ipaddr: 192.168.175.103
+        macaddr: DC:10:00:17:51:03
 
 dhcp_subnets6: []
 

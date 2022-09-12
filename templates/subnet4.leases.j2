@@ -1,6 +1,22 @@
-# Ansible managed
+# {{ ansible_managed }}
+
 {% if lease_list.leases is defined and lease_list.leases | length > 0 %}
 {% for lease in lease_list.leases %}
-host {{ lease.name }} { fixed-address {{ lease.ipaddr }}; hardware ethernet {{ lease.macaddr }}; option pxelinux.configfile "pxelinux.cfg/{{ lease.name }}.cfg"; }
+## {{ lease.name }}
+host {{ lease.name }} {
+  fixed-address {{ lease.ipaddr }};
+  hardware ethernet {{ lease.macaddr }};
+  if option architecture-type = 00:07 {
+    filename "{{ lease.boot_efi64_filename | default(lease_list.boot_efi64_filename) }}";
+    option pxelinux.pathprefix "{{ lease.boot_efi64_pathprefix | default(lease_list.boot_efi64_pathprefix) }}";
+    option pxelinux.configfile "pxelinux.cfg/{{ lease.name }}.cfg";
+  } else {
+    filename "{{ lease.boot_bios_filename | default(lease_list.boot_bios_filename) }}";
+    option pxelinux.pathprefix "{{ lease.boot_bios_pathprefix | default(lease_list.boot_bios_pathprefix) }}";
+    option pxelinux.configfile "pxelinux.cfg/{{ lease.name }}.cfg";
+  }
+}
+
+
 {% endfor %}
 {% endif %}
