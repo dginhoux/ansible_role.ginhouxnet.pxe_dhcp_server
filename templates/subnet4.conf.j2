@@ -15,23 +15,6 @@ subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
   next-server {{ subnet.tftp }};
   allow bootp;
   allow booting;
-
-  # specific bootfile to support BIOS, UEFI32, UEFI64 boot mode
-  #if option arch = 00:07 {
-  #  filename "syslinux/efi64/syslinux.efi";
-  #  option pxelinux.pathprefix "syslinux/efi64/";
-  #} else if option arch = 00:09 {
-  #   filename "syslinux/efi64/syslinux.efi";
-  #   option pxelinux.pathprefix "syslinux/efi64/";
-  #} else {
-  #  filename "syslinux/bios/pxelinux.0";
-  #  option pxelinux.pathprefix "syslinux/bios/";
-  #}
-
-  # specific options for pxelinux to use specified config file
-  vendor-option-space pxelinux;
-  option pxelinux.magic f1:00:74:7e;
-  option dhcp-parameter-request-list = concat(option dhcp-parameter-request-list,d0,d1,d2,d3);
 {% endif %}
 
 {% if subnet.allow_unknown_clients %}
