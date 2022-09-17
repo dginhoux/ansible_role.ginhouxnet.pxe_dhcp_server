@@ -22,7 +22,7 @@
         dest: "{{ dhcp_main_config6_file }}"
 
     - name: identify existing subnets and leases files for cleanup
-      find:
+      ansible.builtin.find:
         paths: "{{ dhcp_sub_config_dir }}"
         patterns: "*"
       register: subnets_leases_files_to_delete
@@ -85,7 +85,7 @@
 - name: cleanup dhcp
   block:
     - name: identify leases files for cleanup
-      find:
+      ansible.builtin.find:
         paths: "{{ dhcp_sub_config_dir }}"
         patterns: "*.leases"
         recurse: "yes"
