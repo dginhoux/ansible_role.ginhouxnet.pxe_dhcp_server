@@ -2,22 +2,22 @@
 - name: generate dhcp
   block:
     - name: "create configuration directoryr"
-      file:
+      ansible.builtin.file:
         state: directory
         dest: "{{ dhcp_config_dir }}"
 
     - name: "create sub-configuration directory"
-      file:
+      ansible.builtin.file:
         state: directory
         dest: "{{ dhcp_sub_config_dir }}"
 
     - name: "create main config file"
-      template:
+      ansible.builtin.template:
         src: dhcpd.conf.j2
         dest: "{{ dhcp_main_config4_file }}"
 
     - name: "create main config6 file"
-      template:
+      ansible.builtin.template:
         src: dhcpd6.conf.j2
         dest: "{{ dhcp_main_config6_file }}"
 
@@ -28,13 +28,13 @@
       register: subnets_leases_files_to_delete
 
     - name: cleanup subnets and leases files
-      file:
+      ansible.builtin.file:
         dest: "{{ item.path }}"
         state: absent
       with_items: "{{ subnets_leases_files_to_delete.files }}"
 
     - name: "create subnet config file"
-      template:
+      ansible.builtin.template:
         src: subnet4.conf.j2
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.conf"
       loop: "{{ dhcp_subnets4 | flatten }}"
@@ -42,7 +42,7 @@
         loop_var: subnet
 
     - name: "create empty leases config file"
-      copy:
+      ansible.builtin.copy:
         content: |
           # Ansible managed
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.leases"
@@ -51,7 +51,7 @@
         loop_var: subnet
 
     - name: "create leases"
-      template:
+      ansible.builtin.template:
         src: subnet4.leases.j2
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ lease_list.network }}.leases"
       loop: "{{ dhcp_leases4 }}"
@@ -59,7 +59,7 @@
         loop_var: lease_list
 
     - name: "override dhcpd.service"
-      copy:
+      ansible.builtin.copy:
         content: |
           [Unit]
           Description=DHCPv4 Server Daemon
@@ -77,7 +77,7 @@
         dest: /etc/systemd/system/dhcpd.service
 
     - name: "systemctl daemon-reload"
-      systemd:
+      ansible.builtin.systemd:
         daemon-reload: "true"
   when: dhcp_configure_action == "generate"
   notify: dhcp_restart
@@ -92,7 +92,7 @@
       register: leases_files_to_delete
 
     - name: cleanup leases files
-      copy:
+      ansible.builtin.copy:
         dest: "{{ item.path }}"
         content: |
           # Ansible managed
