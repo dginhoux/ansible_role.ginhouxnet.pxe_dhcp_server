@@ -1,0 +1,7 @@
+---
+# dhcp_packages:
+# - isc-dhcp-server
+
+dhcp_service: isc-dhcp-server
+
+dhcp_debian_default_file: /etc/default/isc-dhcp-server
