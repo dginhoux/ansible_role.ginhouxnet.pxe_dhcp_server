@@ -1,19 +1,69 @@
-Ansible Role : dginhoux.pxe_dhcp_server
-=========
-
-This ansible role configure isc-dhcp-server.
-Only ipv4 is configured, not enough ipv6 knowledges.
+# ROLE dginhoux.pxe_dhcp_server
 
 
-Requirements
-------------
 
-This role require a supported platform defined in `meta/main.yml`.
-It will skip node with unsupported platform ; this behaviour can be bypassed by settings this variable `asserts_bypass=True`.
+## DESCRIPTION
+
+This ansible role configure isc-dhcp-server.<br />
+NOTE : Only ipv4 is configured, not enough ipv6 knowledges.
 
 
-Role Variables
---------------
+## REQUIREMENTS
+
+#### SUPPORTED PLATFORMS
+
+This role require a supported platform.<br />
+It will skip process with unsupported platform to avoid any compatibility problem.<br />
+This behaviour can be bypassed by settings the following variable `asserts_bypass=True`.
+
+| Platform | Versions |
+|----------|----------|
+| Debian | buster, bullseye |
+| Fedora | 33, 34, 35, 36 |
+| EL | 7, 8 |
+
+#### ANSIBLE VERSION
+
+Ansible >= 2.12
+
+#### DEPENDENCIES
+
+None.
+
+
+
+## INSTALLATION
+
+#### ANSIBLE GALAXY
+
+```shell
+ansible-galaxy install dginhoux.pxe_dhcp_server
+```
+#### GIT
+
+```shell
+git clone https://github.com/dginhoux/ansible_role.pxe_dhcp_server dginhoux.pxe_dhcp_server
+```
+
+
+## USAGE
+
+#### EXAMPLE PLAYBOOK
+
+```yaml
+- hosts: all
+  roles:
+    - name: start role dginhoux.pxe_dhcp_server
+      ansible.builtin.include_role:
+        name: dginhoux.pxe_dhcp_server
+```
+
+
+## VARIABLES
+
+#### DEFAULT VARIABLES
+
+Defaults variables defined in `defaults/main.yml` : 
 
 ```yaml
 dhcp_configure_action: generate
@@ -60,25 +110,34 @@ dhcp_leases4:
         macaddr: DC:10:00:17:51:03
 ```
 
+#### DEFAULT OS SPECIFIC VARIABLES
 
-Dependencies
-------------
-
-none
-
-
-Example Playbook
-----------------
+Those variables files are located in `vars/*.yml` are used to handle OS differences.<br />
+One of theses is loaded dynamically during role runtime using the `include_vars` module and set OS specifics variable's.
 
 
+* Debian family : 
 
-License
--------
+```yaml
+dhcp_service: isc-dhcp-server
 
-BSD
+dhcp_debian_default_file: /etc/default/isc-dhcp-server
+```
+
+* RedHat family : 
+
+```yaml
+dhcp_service: dhcpd
+```
 
 
-Author Information
-------------------
 
-https://github.com/dginhoux/
+## AUTHOR
+
+Dany GINHOUX - https://github.com/dginhoux
+
+
+
+## LICENSE
+
+MIT
