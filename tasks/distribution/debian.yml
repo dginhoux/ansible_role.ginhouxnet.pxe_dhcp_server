@@ -1,5 +1,7 @@
 ---
 - name: generate dhcp
+  when: dhcp_configure_action == "generate"
+  notify: dhcp_restart
   block:
     - name: "create configuration directoryr"
       ansible.builtin.file:
@@ -22,16 +24,16 @@
         dest: "{{ dhcp_main_config6_file }}"
 
     - name: identify existing subnets and leases files for cleanup
+      register: subnets_leases_files_to_delete
       ansible.builtin.find:
         paths: "{{ dhcp_sub_config_dir }}"
         patterns: "*"
-      register: subnets_leases_files_to_delete
 
     - name: cleanup subnets and leases files
+      with_items: "{{ subnets_leases_files_to_delete.files }}"
       ansible.builtin.file:
         dest: "{{ item.path }}"
         state: absent
-      with_items: "{{ subnets_leases_files_to_delete.files }}"
 
     - name: "create default debian file"
       ansible.builtin.template:
@@ -39,46 +41,44 @@
         dest: "{{ dhcp_debian_default_file }}"
 
     - name: "create subnet config file"
-      ansible.builtin.template:
-        src: subnet4.conf.j2
-        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.conf"
       loop: "{{ dhcp_subnets4 | flatten }}"
       loop_control:
         loop_var: subnet
+      ansible.builtin.template:
+        src: subnet4.conf.j2
+        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.conf"
 
     - name: "create empty leases config file"
+      loop: "{{ dhcp_subnets4 | flatten }}"
+      loop_control:
+        loop_var: subnet
       ansible.builtin.copy:
         content: |
           # Ansible managed
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.leases"
-      loop: "{{ dhcp_subnets4 | flatten }}"
-      loop_control:
-        loop_var: subnet
 
     - name: "create leases"
-      ansible.builtin.template:
-        src: subnet4.leases.j2
-        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ lease_list.network }}.leases"
       loop: "{{ dhcp_leases4 }}"
       loop_control:
         loop_var: lease_list
-  when: dhcp_configure_action == "generate"
-  notify: dhcp_restart
+      ansible.builtin.template:
+        src: subnet4.leases.j2
+        dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ lease_list.network }}.leases"
 
 - name: cleanup dhcp
+  when: dhcp_configure_action == "cleanup"
+  notify: dhcp_restart
   block:
     - name: identify leases files for cleanup
+      register: leases_files_to_delete
       ansible.builtin.find:
         paths: "{{ dhcp_sub_config_dir }}"
         patterns: "*.leases"
         recurse: "yes"
-      register: leases_files_to_delete
 
     - name: cleanup leases files
+      with_items: "{{ leases_files_to_delete.files }}"
       ansible.builtin.copy:
         dest: "{{ item.path }}"
         content: |
           # Ansible managed
-      with_items: "{{ leases_files_to_delete.files }}"
-  when: dhcp_configure_action == "cleanup"
-  notify: dhcp_restart
