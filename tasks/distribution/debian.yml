@@ -1,54 +1,72 @@
 ---
-- name: generate dhcp
+- name: Generate dhcp
   when: dhcp_configure_action == "generate"
   notify: dhcp_restart
   block:
-    - name: "create configuration directoryr"
+    - name: Create configuration directory
       ansible.builtin.file:
         state: directory
         dest: "{{ dhcp_config_dir }}"
+        mode: "0755"
+        owner: root
+        group: root
 
-    - name: "create sub-configuration directory"
+    - name: Create sub-configuration directory
       ansible.builtin.file:
         state: directory
         dest: "{{ dhcp_sub_config_dir }}"
+        mode: "0755"
+        owner: root
+        group: root
 
-    - name: "create main config file"
+    - name: Create main config file
       ansible.builtin.template:
         src: dhcpd.conf.j2
         dest: "{{ dhcp_main_config4_file }}"
+        mode: "0644"
+        owner: root
+        group: root
 
-    - name: "create main config6 file"
+    - name: Create main config6 file
       ansible.builtin.template:
         src: dhcpd6.conf.j2
         dest: "{{ dhcp_main_config6_file }}"
+        mode: "0644"
+        owner: root
+        group: root
 
-    - name: identify existing subnets and leases files for cleanup
+    - name: Identify existing subnets and leases files for cleanup
       register: subnets_leases_files_to_delete
       ansible.builtin.find:
         paths: "{{ dhcp_sub_config_dir }}"
         patterns: "*"
 
-    - name: cleanup subnets and leases files
+    - name: Cleanup subnets and leases files
       with_items: "{{ subnets_leases_files_to_delete.files }}"
       ansible.builtin.file:
         dest: "{{ item.path }}"
         state: absent
 
-    - name: "create default debian file"
+    - name: Create default debian file
       ansible.builtin.template:
         src: debian_default.j2
         dest: "{{ dhcp_debian_default_file }}"
+        mode: "0644"
+        owner: root
+        group: root
 
-    - name: "create subnet config file"
+    - name: Create subnet config file
       loop: "{{ dhcp_subnets4 | flatten }}"
       loop_control:
         loop_var: subnet
       ansible.builtin.template:
         src: subnet4.conf.j2
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.conf"
+        mode: "0644"
+        owner: root
+        group: root
 
-    - name: "create empty leases config file"
+    - name: Create empty leases config file
       loop: "{{ dhcp_subnets4 | flatten }}"
       loop_control:
         loop_var: subnet
@@ -56,29 +74,38 @@
         content: |
           # Ansible managed
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ subnet.network }}.leases"
+        mode: "0644"
+        owner: root
+        group: root
 
-    - name: "create leases"
+    - name: Create leases
       loop: "{{ dhcp_leases4 }}"
       loop_control:
         loop_var: lease_list
       ansible.builtin.template:
         src: subnet4.leases.j2
         dest: "{{ dhcp_sub_config_dir }}/subnet4-{{ lease_list.network }}.leases"
+        mode: "0644"
+        owner: root
+        group: root
 
-- name: cleanup dhcp
+- name: Cleanup dhcp
   when: dhcp_configure_action == "cleanup"
   notify: dhcp_restart
   block:
-    - name: identify leases files for cleanup
+    - name: Identify leases files for cleanup
       register: leases_files_to_delete
       ansible.builtin.find:
         paths: "{{ dhcp_sub_config_dir }}"
         patterns: "*.leases"
         recurse: "yes"
 
-    - name: cleanup leases files
+    - name: Cleanup leases files
       with_items: "{{ leases_files_to_delete.files }}"
       ansible.builtin.copy:
         dest: "{{ item.path }}"
         content: |
           # Ansible managed
+        mode: "0644"
+        owner: root
+        group: root
