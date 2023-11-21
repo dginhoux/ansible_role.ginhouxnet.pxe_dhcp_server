@@ -47,14 +47,6 @@
         dest: "{{ item.path }}"
         state: absent
 
-    - name: Create default debian file
-      ansible.builtin.template:
-        src: debian_default.j2
-        dest: "{{ dhcp_debian_default_file }}"
-        mode: "0644"
-        owner: root
-        group: root
-
     - name: Create subnet config file
       loop: "{{ dhcp_subnets4 | flatten }}"
       loop_control:
@@ -88,6 +80,26 @@
         mode: "0644"
         owner: root
         group: root
+
+    - name: Include specifics distribution sub-tasks
+      ansible.builtin.include_tasks:
+        file: "{{ included_sub_tasks }}"
+      with_first_found:
+        - files:
+            - "sub-{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+            - "sub-{{ ansible_distribution | lower }}.yml"
+            - "sub-{{ ansible_os_family | lower }}.yml"
+            - "sub-{{ ansible_system | lower }}.yml"
+            - "main.yml"
+          paths:
+            - "sub-tasks"
+          skip: true
+      loop_control:
+        loop_var: included_sub_tasks
+
+    - name: "Systemctl daemon-reload"
+      ansible.builtin.systemd:
+        daemon-reload: "true"
 
 - name: Cleanup dhcp
   when: dhcp_configure_action == "cleanup"

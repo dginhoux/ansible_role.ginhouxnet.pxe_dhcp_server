@@ -1,0 +1,9 @@
+---
+
+- name: Create default debian file
+  ansible.builtin.template:
+    src: debian_default.j2
+    dest: "{{ dhcp_debian_default_file }}"
+    mode: "0644"
+    owner: root
+    group: root
