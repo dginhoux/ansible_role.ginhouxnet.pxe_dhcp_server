@@ -86,10 +86,10 @@
         file: "{{ included_sub_tasks }}"
       with_first_found:
         - files:
-            - "sub-{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-            - "sub-{{ ansible_distribution | lower }}.yml"
-            - "sub-{{ ansible_os_family | lower }}.yml"
-            - "sub-{{ ansible_system | lower }}.yml"
+            - "sub_{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
+            - "sub_{{ ansible_distribution | lower }}.yml"
+            - "sub_{{ ansible_os_family | lower }}.yml"
+            - "sub_{{ ansible_system | lower }}.yml"
             - "main.yml"
           paths:
             - "sub-tasks"
