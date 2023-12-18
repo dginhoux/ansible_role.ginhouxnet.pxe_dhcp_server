@@ -20,7 +20,7 @@ galaxy_info:
       versions:
         - all
   galaxy_tags:
-    - isc-dchp
+    - iscdchp
     - dhcp
 
 dependencies: []

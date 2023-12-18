@@ -1,10 +1,10 @@
 ---
-- name: test dhcp-server config
+- name: Test dhcp-server config
   ansible.builtin.command:
     cmd: "/usr/sbin/dhcpd -t -cf {{ dhcp_main_config4_file }}"
   listen: dhcp_restart
 
-- name: restart dhcp-server
+- name: Restart dhcp-server
   ansible.builtin.service:
     name: "{{ dhcp_service }}"
     state: "{{ (dhcp_global_server_state | default('started') == 'started') | ternary('restarted', 'stopped') }}"
